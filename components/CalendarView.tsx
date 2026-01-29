@@ -1,12 +1,15 @@
 
-import React from 'react';
-import { Project, Intensity } from '../types';
+import React, { useMemo, useRef } from 'react';
+import { Project } from '../types';
+import { generateColorLevels, getColorForLevel } from '../utils/colors';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
 
 interface Props {
   projects: Project[];
   activeProject: Project;
   onSelectProject: (id: string) => void;
-  onLog: (intensity: Intensity) => void;
+  onLog: () => void;
   onAddPhoto: (photoBase64: string) => void;
 }
 
@@ -15,26 +18,51 @@ const CalendarView: React.FC<Props> = ({ projects, activeProject, onSelectProjec
   const today = new Date().toISOString().split('T')[0];
   const months = Array.from({ length: 12 }, (_, i) => i + 1);
   const days = Array.from({ length: 31 }, (_, i) => i + 1);
+  const printRef = useRef<HTMLDivElement>(null);
 
   const themeColor = activeProject.colorBase.startsWith('#') ? activeProject.colorBase : '#3b82f6';
-  const hasLoggedToday = !!activeProject.logs[today];
+  const todayCount = activeProject.logs[today] || 0;
+  const checkInLevels = activeProject.checkInLevels || [1, 2, 3, 4, 5];
+  const checkInShape = activeProject.checkInShape || 'square';
+  
+  const colorLevels = useMemo(() => generateColorLevels(themeColor), [themeColor]);
 
   const getProjectColor = (p: Project) => p.colorBase.startsWith('#') ? p.colorBase : '#3b82f6';
 
-  const getCellColor = (month: number, day: number) => {
-    const dateStr = `${currentYear}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-    const intensity = activeProject.logs[dateStr];
-    
+  const isValidDate = (month: number, day: number) => {
     const d = new Date(currentYear, month - 1, day);
-    if (d.getMonth() !== month - 1) return { style: {}, className: 'bg-transparent opacity-0' };
-    if (!intensity) return { style: {}, className: 'bg-white/40 border-gray-100' };
+    return d.getMonth() === month - 1;
+  };
+
+  const getCheckInCount = (month: number, day: number): number | null => {
+    if (!isValidDate(month, day)) return null;
+    const dateStr = `${currentYear}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    return activeProject.logs[dateStr] || 0;
+  };
+
+  const handleExportPDF = async () => {
+    if (!printRef.current) return;
     
-    return { style: { backgroundColor: themeColor }, className: '' };
+    const canvas = await html2canvas(printRef.current, {
+      scale: 2,
+      backgroundColor: '#f9fafb',
+      useCORS: true,
+    });
+    
+    const imgData = canvas.toDataURL('image/png');
+    const pdf = new jsPDF({
+      orientation: 'portrait',
+      unit: 'px',
+      format: [canvas.width, canvas.height]
+    });
+    
+    pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
+    pdf.save(`${activeProject.name}-${currentYear}.pdf`);
   };
 
   return (
     <div className="flex flex-col h-full">
-      <div className="relative flex-1 flex flex-col min-h-0">
+      <div ref={printRef} className="relative flex-1 flex flex-col min-h-0">
         <div className="flex overflow-x-auto no-scrollbar gap-1 px-1 shrink-0 relative z-10">
           {projects.map(p => {
             const pColor = getProjectColor(p);
@@ -69,58 +97,97 @@ const CalendarView: React.FC<Props> = ({ projects, activeProject, onSelectProjec
         </div>
         
         <div 
-          className="grid-paper border border-gray-100 rounded-lg rounded-tl-none p-3 pt-4 card-shadow flex-1 flex flex-col min-h-0"
+          className="grid-paper border border-gray-200 rounded-lg rounded-tl-none p-3 pt-4 card-shadow flex-1 flex flex-col min-h-0"
           style={{ borderTopColor: themeColor }}
         >
-          <div className="flex ml-5 mb-1">
-            <div className="grid grid-cols-12 flex-1 gap-px">
+          <div className="flex items-center mb-1">
+            <div className="w-6 text-[10px] font-gaegu font-bold text-gray-400">{currentYear}</div>
+            <div className="flex-1 grid grid-cols-12">
               {months.map(m => (
-                <div key={m} className="text-[9px] font-gaegu font-bold text-gray-300 text-center">{m}</div>
+                <div key={m} className="text-[9px] font-gaegu font-bold text-gray-400 text-center">{m}月</div>
               ))}
             </div>
+            <button
+              onClick={handleExportPDF}
+              className="w-6 h-6 flex items-center justify-center text-gray-300 hover:text-gray-500 transition-colors"
+              title="导出PDF"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+              </svg>
+            </button>
           </div>
-          <div className="flex flex-1 min-h-0">
-            <div className="flex flex-col w-5 pt-[1px]">
+          
+          <div className="flex-1 overflow-x-auto no-scrollbar min-h-0">
+            <div 
+              className="grid gap-[2px] h-full" 
+              style={{ 
+                minWidth: '280px',
+                gridTemplateColumns: '16px repeat(12, 1fr)',
+                gridTemplateRows: 'repeat(31, 1fr)'
+              }}
+            >
               {days.map(d => (
-                <div key={d} className="h-[calc(100%/31)] flex items-center justify-start text-[8px] font-gaegu font-bold text-gray-300 leading-none">
-                  {d % 5 === 0 || d === 1 ? d : ''}
+                <div 
+                  key={`date-${d}`}
+                  className="flex items-center justify-end pr-0.5 text-[8px] font-gaegu font-bold text-gray-300"
+                  style={{ gridColumn: 1, gridRow: d }}
+                >
+                  {d === 1 || d % 5 === 0 ? d : ''}
                 </div>
               ))}
-            </div>
-            <div className="flex-1">
-              <div className="grid grid-cols-12 gap-[1px] h-full">
-                {months.map(month => (
-                  <div key={month} className="flex flex-col gap-[1px] h-full">
-                    {days.map(day => {
-                      const { style, className } = getCellColor(month, day);
-                      return (
-                        <div 
-                          key={day} 
-                          className={`w-full h-full border-[0.5px] border-gray-50 rounded-sm transition-colors ${className}`}
-                          style={style}
-                        />
-                      );
-                    })}
-                  </div>
-                ))}
-              </div>
+              
+              {months.map((month, monthIdx) => (
+                days.map(day => {
+                  const count = getCheckInCount(month, day);
+                  const isInvalid = count === null;
+                  const cellColor = count !== null && count > 0 
+                    ? getColorForLevel(count, checkInLevels, colorLevels)
+                    : null;
+                  
+                  return (
+                    <div
+                      key={`${month}-${day}`}
+                      className={`aspect-square transition-colors ${
+                        isInvalid ? 'opacity-0' : ''
+                      } ${checkInShape === 'circle' ? 'rounded-full' : 'rounded-[2px]'}`}
+                      style={{
+                        gridColumn: monthIdx + 2,
+                        gridRow: day,
+                        backgroundColor: cellColor || 'rgba(0,0,0,0.03)',
+                      }}
+                    />
+                  );
+                })
+              ))}
             </div>
           </div>
           
-          <div className="mt-3 pt-3 border-t border-gray-100 shrink-0">
+          <div className="mt-3 pt-3 border-t border-gray-200 shrink-0">
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-1">
+                {colorLevels.map((c, i) => (
+                  <div 
+                    key={i}
+                    className={`w-4 h-4 ${checkInShape === 'circle' ? 'rounded-full' : 'rounded-sm'}`}
+                    style={{ backgroundColor: c }}
+                    title={`${checkInLevels[i]}次`}
+                  />
+                ))}
+              </div>
+              {todayCount > 0 && (
+                <span className="text-xs text-gray-400">今日: {todayCount}次</span>
+              )}
+            </div>
             <button
-              onClick={() => onLog(1)}
-              className={`w-full py-2.5 rounded-xl font-bold text-sm transition-all active:scale-[0.98] flex items-center justify-center gap-2 ${
-                hasLoggedToday 
-                  ? 'text-white shadow-sm' 
-                  : 'border-2 border-dashed border-gray-300 text-gray-400 hover:border-gray-400'
-              }`}
-              style={hasLoggedToday ? { backgroundColor: themeColor } : {}}
+              onClick={onLog}
+              className="w-full py-2.5 rounded-xl font-bold text-sm transition-all active:scale-[0.98] flex items-center justify-center gap-2 text-white shadow-sm"
+              style={{ backgroundColor: themeColor }}
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
               </svg>
-              {hasLoggedToday ? '今日已打卡' : '打卡一次'}
+              打卡 +1
             </button>
           </div>
         </div>

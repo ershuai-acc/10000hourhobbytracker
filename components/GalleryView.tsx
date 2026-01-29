@@ -1,6 +1,8 @@
 
 import React, { useRef } from 'react';
 import { Project, PhotoAspectRatio } from '../types';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
 
 interface Props {
   projects: Project[];
@@ -21,10 +23,31 @@ const getAspectRatioClass = (ratio: PhotoAspectRatio): string => {
 
 const GalleryView: React.FC<Props> = ({ projects, activeProject, onSelectProject, onAddPhoto }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const printRef = useRef<HTMLDivElement>(null);
 
   const getProjectColor = (p: Project) => p.colorBase.startsWith('#') ? p.colorBase : '#3b82f6';
   const themeColor = activeProject ? getProjectColor(activeProject) : '#ec4899';
   const aspectRatioClass = getAspectRatioClass(activeProject?.photoAspectRatio || '1:1');
+
+  const handleExportPDF = async () => {
+    if (!printRef.current || !activeProject) return;
+    
+    const canvas = await html2canvas(printRef.current, {
+      scale: 2,
+      backgroundColor: '#f9fafb',
+      useCORS: true,
+    });
+    
+    const imgData = canvas.toDataURL('image/png');
+    const pdf = new jsPDF({
+      orientation: 'portrait',
+      unit: 'px',
+      format: [canvas.width, canvas.height]
+    });
+    
+    pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
+    pdf.save(`${activeProject.name}-gallery.pdf`);
+  };
 
   if (projects.length === 0) {
     return (
@@ -53,7 +76,7 @@ const GalleryView: React.FC<Props> = ({ projects, activeProject, onSelectProject
 
   return (
     <div className="flex flex-col h-full">
-      <div className="relative flex-1 flex flex-col min-h-0">
+      <div ref={printRef} className="relative flex-1 flex flex-col min-h-0">
         <div className="flex overflow-x-auto no-scrollbar gap-1 px-1 shrink-0 relative z-10">
           {projects.map(p => {
             const pColor = getProjectColor(p);
@@ -91,6 +114,17 @@ const GalleryView: React.FC<Props> = ({ projects, activeProject, onSelectProject
           className="grid-paper border border-gray-100 rounded-lg rounded-tl-none p-3 pt-4 card-shadow flex-1 overflow-y-auto"
           style={{ borderTopColor: themeColor }}
         >
+          <div className="flex justify-end mb-2">
+            <button
+              onClick={handleExportPDF}
+              className="w-6 h-6 flex items-center justify-center text-gray-300 hover:text-gray-500 transition-colors"
+              title="导出PDF"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+              </svg>
+            </button>
+          </div>
           <div className="grid grid-cols-2 gap-3">
             {activeProject?.photos?.map((photo, i) => (
               <div 

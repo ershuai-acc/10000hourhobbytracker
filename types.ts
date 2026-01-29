@@ -2,24 +2,28 @@
 export type Intensity = 1 | 2 | 3 | 4 | 5;
 
 export interface DailyLog {
-  [date: string]: Intensity; // date format: YYYY-MM-DD
+  [date: string]: number;
 }
 
 export type ProjectMode = 'calendar' | 'gallery';
 
 export type PhotoAspectRatio = '1:1' | '16:9' | '9:16' | '4:3' | '3:4';
 
+export type CheckInShape = 'square' | 'circle';
+
 export interface Project {
   id: string;
   name: string;
   description?: string;
   mode: ProjectMode;
-  colorBase: string; // hex color like '#3b82f6' or legacy Tailwind name
-  themeImage?: string; // base64 image as theme instead of color
+  colorBase: string;
   goalHours: number;
+  hoursPerCheckIn: number;
+  checkInLevels: number[];
+  checkInShape?: CheckInShape;
   logs: DailyLog;
-  photos?: string[]; // base64 strings for gallery mode
-  photoAspectRatio?: PhotoAspectRatio; // aspect ratio for gallery mode photos
+  photos?: string[];
+  photoAspectRatio?: PhotoAspectRatio;
   createdAt: number;
 }
 

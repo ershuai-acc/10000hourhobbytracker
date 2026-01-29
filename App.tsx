@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { Tab, Project, UserProfile, Intensity } from './types';
+import { Tab, Project, UserProfile } from './types';
 import { INITIAL_PROJECTS } from './constants';
 import CalendarView from './components/CalendarView';
 import ProgressView from './components/ProgressView';
@@ -17,10 +17,13 @@ const App: React.FC = () => {
       return parsed.map((p: any) => ({
         ...p,
         mode: p.mode || 'calendar',
-        photos: p.photos || []
+        photos: p.photos || [],
+        hoursPerCheckIn: p.hoursPerCheckIn || 1,
+        checkInLevels: p.checkInLevels || [1, 2, 3, 4, 5],
+        checkInShape: p.checkInShape || 'square',
       }));
     }
-    return INITIAL_PROJECTS.map(p => ({ ...p, mode: 'calendar' as const, photos: [] }));
+    return INITIAL_PROJECTS.map(p => ({ ...p }));
   });
   
   const [activeProjectId, setActiveProjectId] = useState<string>(projects[0]?.id || '');
@@ -38,15 +41,16 @@ const App: React.FC = () => {
 
   const activeProject = projects.find(p => p.id === activeProjectId) || projects[0];
 
-  const handleLogProgress = useCallback((intensity: Intensity) => {
+  const handleLogProgress = useCallback(() => {
     const today = new Date().toISOString().split('T')[0];
     setProjects(prev => prev.map(p => {
       if (p.id === activeProjectId) {
+        const currentCount = p.logs[today] || 0;
         return {
           ...p,
           logs: {
             ...p.logs,
-            [today]: intensity
+            [today]: currentCount + 1
           }
         };
       }
@@ -73,12 +77,16 @@ const App: React.FC = () => {
       const newProject: Project = {
         id: Math.random().toString(36).substr(2, 9),
         name: projectData.name || 'New Hobby',
+        description: projectData.description,
         mode: projectData.mode || 'calendar',
         colorBase: projectData.colorBase || '#3b82f6',
-        themeImage: projectData.themeImage,
-        goalHours: projectData.goalHours || 100,
+        goalHours: projectData.goalHours || 10000,
+        hoursPerCheckIn: projectData.hoursPerCheckIn || 1,
+        checkInLevels: projectData.checkInLevels || [1, 2, 3, 4, 5],
+        checkInShape: projectData.checkInShape || 'square',
         logs: {},
         photos: [],
+        photoAspectRatio: projectData.photoAspectRatio,
         createdAt: Date.now(),
       };
       setProjects(prev => [...prev, newProject]);
@@ -97,12 +105,6 @@ const App: React.FC = () => {
       setActiveProjectId(nextProjects[0]?.id || '');
     }
   };
-
-  const recentThemes = projects
-    .slice()
-    .sort((a, b) => b.createdAt - a.createdAt)
-    .map(p => ({ color: p.colorBase, image: p.themeImage }))
-    .slice(0, 5);
 
   return (
     <div className="bg-[#f9fafb] h-screen flex flex-col relative mx-auto max-w-md w-full overflow-hidden">
@@ -153,7 +155,6 @@ const App: React.FC = () => {
         onSave={handleSaveProject}
         onDelete={handleDeleteProject}
         editingProject={editingProject}
-        recentThemes={recentThemes}
       />
     </div>
   );

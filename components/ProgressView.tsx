@@ -17,21 +17,23 @@ const ProgressView: React.FC<Props> = ({ projects, onEdit, onAdd, user }) => {
         isGallery: true
       };
     }
-    const totalUnits = (Object.values(project.logs) as number[]).reduce((acc, curr) => acc + curr, 0);
-    const progressPercent = Math.min((totalUnits / project.goalHours) * 100, 100);
-    return { totalUnits, progressPercent, isGallery: false };
+    const totalCheckIns = (Object.values(project.logs) as number[]).reduce((acc, curr) => acc + curr, 0);
+    const hoursPerCheckIn = project.hoursPerCheckIn || 1;
+    const totalHours = totalCheckIns * hoursPerCheckIn;
+    const progressPercent = Math.min((totalHours / project.goalHours) * 100, 100);
+    return { totalHours, progressPercent, isGallery: false };
   };
 
   const getProjectIcon = (mode: string) => {
     if (mode === 'gallery') {
       return (
-        <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
         </svg>
       );
     }
     return (
-      <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
       </svg>
     );
@@ -71,27 +73,24 @@ const ProgressView: React.FC<Props> = ({ projects, onEdit, onAdd, user }) => {
                   style={{ backgroundColor: getWashiColor(themeColor) }}
                 />
                 
-                <div className="grid-paper border border-gray-100 rounded-lg p-4 pt-6 card-shadow relative">
+                <button 
+                  onClick={() => onEdit(project)}
+                  className="w-full text-left grid-paper border border-gray-100 rounded-lg p-4 pt-6 card-shadow relative hover:shadow-md transition-shadow active:scale-[0.99]"
+                >
                   <div className="flex items-center gap-3 mb-3">
-                    <button 
-                      onClick={() => onEdit(project)}
-                      className="w-10 h-10 rounded-xl flex items-center justify-center transition-all hover:opacity-80 active:scale-95 overflow-hidden shadow-sm shrink-0"
-                      style={project.themeImage ? {} : { backgroundColor: themeColor }}
+                    <div 
+                      className="w-10 h-10 rounded-xl flex items-center justify-center shadow-sm shrink-0 text-white/80"
+                      style={{ backgroundColor: themeColor }}
                     >
-                      {project.themeImage ? (
-                        <img src={project.themeImage} alt="theme" className="w-full h-full object-cover" />
-                      ) : null}
-                    </button>
+                      {getProjectIcon(project.mode)}
+                    </div>
 
                     <div className="flex-1 flex justify-between items-center min-w-0">
-                      <div className="flex items-center gap-1.5 min-w-0">
-                        {getProjectIcon(project.mode)}
-                        <h3 className="text-2xl font-bold font-gaegu text-[#2d3748] tracking-tight truncate">{project.name}</h3>
-                      </div>
+                      <h3 className="text-2xl font-bold font-gaegu text-[#2d3748] tracking-tight truncate">{project.name}</h3>
                       {stats.isGallery ? (
                         <span className="text-gray-400 font-gaegu text-base shrink-0 ml-2">{stats.count} 张</span>
                       ) : (
-                        <span className="text-gray-400 font-gaegu text-base shrink-0 ml-2">{stats.totalUnits?.toLocaleString()}h</span>
+                        <span className="text-gray-400 font-gaegu text-base shrink-0 ml-2">{stats.totalHours?.toLocaleString()}h</span>
                       )}
                     </div>
                   </div>
@@ -113,7 +112,7 @@ const ProgressView: React.FC<Props> = ({ projects, onEdit, onAdd, user }) => {
                       </div>
                     </div>
                   )}
-                </div>
+                </button>
               </div>
             );
           })}
