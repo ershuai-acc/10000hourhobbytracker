@@ -1,0 +1,137 @@
+
+import React, { useRef } from 'react';
+import { Project, PhotoAspectRatio } from '../types';
+
+interface Props {
+  projects: Project[];
+  activeProject?: Project;
+  onSelectProject: (id: string) => void;
+  onAddPhoto: (photoBase64: string) => void;
+}
+
+const getAspectRatioClass = (ratio: PhotoAspectRatio): string => {
+  switch (ratio) {
+    case '16:9': return 'aspect-video';
+    case '9:16': return 'aspect-[9/16]';
+    case '4:3': return 'aspect-[4/3]';
+    case '3:4': return 'aspect-[3/4]';
+    default: return 'aspect-square';
+  }
+};
+
+const GalleryView: React.FC<Props> = ({ projects, activeProject, onSelectProject, onAddPhoto }) => {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const getProjectColor = (p: Project) => p.colorBase.startsWith('#') ? p.colorBase : '#3b82f6';
+  const themeColor = activeProject ? getProjectColor(activeProject) : '#ec4899';
+  const aspectRatioClass = getAspectRatioClass(activeProject?.photoAspectRatio || '1:1');
+
+  if (projects.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 text-center space-y-4 px-6">
+        <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center text-gray-300">
+           <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+           </svg>
+        </div>
+        <h3 className="text-xl font-bold font-gaegu text-gray-700">No Photo Journals yet</h3>
+        <p className="text-sm font-handwritten text-gray-400">Add a new project and select "Photo Journal" mode to start collecting memories!</p>
+      </div>
+    );
+  }
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        onAddPhoto(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  return (
+    <div className="flex flex-col h-full">
+      <div className="relative flex-1 flex flex-col min-h-0">
+        <div className="flex overflow-x-auto no-scrollbar gap-1 px-1 shrink-0 relative z-10">
+          {projects.map(p => {
+            const pColor = getProjectColor(p);
+            const isActive = activeProject?.id === p.id;
+            return (
+              <button
+                key={p.id}
+                onClick={() => onSelectProject(p.id)}
+                className={`px-3 py-1.5 text-sm font-bold whitespace-nowrap transition-all flex items-center gap-1.5 rounded-t-lg border-t border-l border-r ${
+                  isActive 
+                    ? 'text-white -mb-px relative z-20' 
+                    : 'bg-gray-100 text-gray-400 border-gray-200 hover:bg-gray-200'
+                }`}
+                style={isActive ? { 
+                  backgroundColor: pColor,
+                  borderColor: pColor
+                } : {}}
+              >
+                {p.mode === 'gallery' ? (
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                ) : (
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                )}
+                {p.name}
+              </button>
+            );
+          })}
+        </div>
+        
+        <div 
+          className="grid-paper border border-gray-100 rounded-lg rounded-tl-none p-3 pt-4 card-shadow flex-1 overflow-y-auto"
+          style={{ borderTopColor: themeColor }}
+        >
+          <div className="grid grid-cols-2 gap-3">
+            {activeProject?.photos?.map((photo, i) => (
+              <div 
+                key={i} 
+                className={`${aspectRatioClass} bg-white rounded-xl border-4 border-white shadow-md overflow-hidden transform transition-transform hover:scale-105`}
+                style={{ transform: `rotate(${(i % 3 === 0 ? -2 : i % 3 === 1 ? 2 : 0)}deg)` }}
+              >
+                <img src={photo} alt="Memory" className="w-full h-full object-cover" />
+              </div>
+            ))}
+
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              className={`${aspectRatioClass} bg-white/50 border-2 border-dashed border-gray-200 rounded-xl flex flex-col items-center justify-center gap-2 group hover:bg-white hover:border-gray-300 transition-all`}
+            >
+              <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-400 group-hover:bg-gray-200 group-hover:text-gray-500 transition-all">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                </svg>
+              </div>
+              <span className="text-[10px] font-bold text-gray-300 group-hover:text-gray-400 uppercase tracking-widest">New Moment</span>
+            </button>
+          </div>
+
+          <input 
+            type="file" 
+            ref={fileInputRef} 
+            onChange={handleFileChange} 
+            className="hidden" 
+            accept="image/*" 
+          />
+
+          {activeProject?.photos?.length === 0 && (
+            <div className="flex flex-col items-center justify-center py-12 text-center">
+               <p className="text-sm font-handwritten text-gray-300 italic">No photos in this album yet.<br/>Upload your first achievement!</p>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default GalleryView;
