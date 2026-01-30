@@ -89,6 +89,28 @@ const App: React.FC = () => {
     }));
   }, [activeProjectId]);
 
+  const handleUpdatePhoto = useCallback((index: number, newPhoto: string) => {
+    setProjects(prev => prev.map(p => {
+      if (p.id === activeProjectId) {
+        const newPhotos = [...(p.photos || [])];
+        newPhotos[index] = newPhoto;
+        return { ...p, photos: newPhotos };
+      }
+      return p;
+    }));
+  }, [activeProjectId]);
+
+  const handleDeletePhoto = useCallback((index: number) => {
+    setProjects(prev => prev.map(p => {
+      if (p.id === activeProjectId) {
+        const newPhotos = [...(p.photos || [])];
+        newPhotos.splice(index, 1);
+        return { ...p, photos: newPhotos };
+      }
+      return p;
+    }));
+  }, [activeProjectId]);
+
   const handleSaveProject = (projectData: Partial<Project>) => {
     if (editingProject) {
       setProjects(prev => prev.map(p => p.id === editingProject.id ? { ...p, ...projectData } : p));
@@ -144,6 +166,8 @@ const App: React.FC = () => {
               activeProject={activeProject}
               onSelectProject={setActiveProjectId}
               onAddPhoto={handleAddPhoto}
+              onUpdatePhoto={handleUpdatePhoto}
+              onDeletePhoto={handleDeletePhoto}
             />
           ) : (
             <CalendarView 
