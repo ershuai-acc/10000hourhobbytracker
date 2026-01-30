@@ -36,21 +36,25 @@ const App: React.FC = () => {
   };
 
   useEffect(() => {
-    localStorage.setItem('hobby_tracker_projects', JSON.stringify(projects));
+    try {
+      localStorage.setItem('hobby_tracker_projects', JSON.stringify(projects));
+    } catch (e) {
+      console.error('Failed to save to localStorage:', e);
+    }
   }, [projects]);
 
   const activeProject = projects.find(p => p.id === activeProjectId) || projects[0];
 
-  const handleLogProgress = useCallback(() => {
-    const today = new Date().toISOString().split('T')[0];
+  const handleLogProgress = useCallback((date?: string) => {
+    const targetDate = date || new Date().toISOString().split('T')[0];
     setProjects(prev => prev.map(p => {
       if (p.id === activeProjectId) {
-        const currentCount = p.logs[today] || 0;
+        const currentCount = p.logs[targetDate] || 0;
         return {
           ...p,
           logs: {
             ...p.logs,
-            [today]: currentCount + 1
+            [targetDate]: currentCount + 1
           }
         };
       }
@@ -65,6 +69,21 @@ const App: React.FC = () => {
           ...p,
           photos: [...(p.photos || []), photoBase64]
         };
+      }
+      return p;
+    }));
+  }, [activeProjectId]);
+
+  const handleUpdateLog = useCallback((date: string, count: number) => {
+    setProjects(prev => prev.map(p => {
+      if (p.id === activeProjectId) {
+        const newLogs = { ...p.logs };
+        if (count <= 0) {
+          delete newLogs[date];
+        } else {
+          newLogs[date] = count;
+        }
+        return { ...p, logs: newLogs };
       }
       return p;
     }));
@@ -132,6 +151,7 @@ const App: React.FC = () => {
               activeProject={activeProject}
               onSelectProject={setActiveProjectId}
               onLog={handleLogProgress}
+              onUpdateLog={handleUpdateLog}
               onAddPhoto={handleAddPhoto}
             />
           )
