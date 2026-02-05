@@ -1,0 +1,30 @@
+import { configureStore } from '@reduxjs/toolkit'
+import { createLogger } from 'redux-logger'
+import userReducer from '@/store/slices/userSlice'
+import appReducer from '@/store/slices/appSlice'
+import projectReducer from '@/store/slices/projectSlice'
+
+export default function configStore() {
+  const store = configureStore({
+    reducer: {
+      user: userReducer,
+      app: appReducer,
+      project: projectReducer,
+    },
+    middleware: (getDefaultMiddleware) => {
+      const middlewares = getDefaultMiddleware({
+        // 禁用 thunk 的 extraArgument，避免使用 AbortController
+        thunk: {
+          extraArgument: undefined,
+        },
+      })
+      // 开发环境添加 redux-logger
+      if (process.env.NODE_ENV === 'development') {
+        middlewares.push(createLogger())
+      }
+      return middlewares
+    },
+    devTools: process.env.NODE_ENV === 'development',
+  })
+  return store
+}

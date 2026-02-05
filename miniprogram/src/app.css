@@ -1,0 +1,198 @@
+@import 'tailwindcss';
+
+@custom-variant dark (&:is(.dark, .dark *));
+
+:root,
+page {
+  --background: #ffffff;
+  --foreground: #0a0a0a;
+  --card: #ffffff;
+  --card-foreground: #0a0a0a;
+  --popover: #ffffff;
+  --popover-foreground: #0a0a0a;
+  --primary: #171717;
+  --primary-foreground: #fafafa;
+  --secondary: #f5f5f5;
+  --secondary-foreground: #171717;
+  --muted: #f5f5f5;
+  --muted-foreground: #737373;
+  --accent: #f5f5f5;
+  --accent-foreground: #171717;
+  --destructive: #ef4444;
+  --destructive-foreground: #fafafa;
+  --border: #e5e5e5;
+  --input: #e5e5e5;
+  --ring: #a3a3a3;
+  --radius: 0.625rem;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root,
+  page {
+    --background: #ffffff;
+    --foreground: #0a0a0a;
+    --card: #ffffff;
+    --card-foreground: #0a0a0a;
+    --popover: #ffffff;
+    --popover-foreground: #0a0a0a;
+    --primary: #171717;
+    --primary-foreground: #fafafa;
+    --secondary: #f5f5f5;
+    --secondary-foreground: #171717;
+    --muted: #f5f5f5;
+    --muted-foreground: #737373;
+    --accent: #f5f5f5;
+    --accent-foreground: #171717;
+    --destructive: #ef4444;
+    --destructive-foreground: #fafafa;
+    --border: #e5e5e5;
+    --input: #e5e5e5;
+    --ring: #a3a3a3;
+  }
+}
+
+.dark {
+  --background: #ffffff !important;
+  --foreground: #0a0a0a !important;
+  --card: #ffffff !important;
+  --card-foreground: #0a0a0a !important;
+  --popover: #ffffff !important;
+  --popover-foreground: #0a0a0a !important;
+  --primary: #171717 !important;
+  --primary-foreground: #fafafa !important;
+  --secondary: #f5f5f5 !important;
+  --secondary-foreground: #171717 !important;
+  --muted: #f5f5f5 !important;
+  --muted-foreground: #737373 !important;
+  --accent: #f5f5f5 !important;
+  --accent-foreground: #171717 !important;
+  --destructive: #ef4444 !important;
+  --destructive-foreground: #fafafa !important;
+  --border: #e5e5e5 !important;
+  --input: #e5e5e5 !important;
+  --ring: #a3a3a3 !important;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body,
+  page {
+    background-color: var(--background) !important;
+    color: var(--foreground) !important;
+    @apply bg-background text-foreground;
+  }
+}
+
+/* Taro H5 Navigation Bar Dark Mode Overrides */
+@media (prefers-color-scheme: dark) {
+  .taro-navigation-bar {
+    background-color: var(--background) !important;
+  }
+  .taro-navigation-bar__content,
+  .taro-navigation-bar-no-icon {
+    background-color: var(--background) !important;
+  }
+  .taro-navigation-bar-title,
+  .taro-navigation-bar__title {
+    color: var(--foreground) !important;
+  }
+}
+
+.dark .taro-navigation-bar {
+  background-color: var(--background) !important;
+}
+.dark .taro-navigation-bar__content,
+.dark .taro-navigation-bar-no-icon {
+  background-color: var(--background) !important;
+}
+.dark .taro-navigation-bar-title,
+.dark .taro-navigation-bar__title {
+  color: var(--foreground) !important;
+}
+
+/* Grid Paper Background */
+.grid-paper {
+  background-color: white;
+  background-image: linear-gradient(#e5e7eb 1px, transparent 1px),
+    linear-gradient(90deg, #e5e7eb 1px, transparent 1px);
+  background-size: 15px 15px;
+}
+
+/* Washi Tape Effect */
+.washi-tape {
+  opacity: 0.8;
+  background-image: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 2px,
+    rgba(255, 255, 255, 0.3) 2px,
+    rgba(255, 255, 255, 0.3) 4px
+  );
+}
+
+/* Card Shadow */
+.card-shadow {
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.08),
+    0 4px 12px rgba(0, 0, 0, 0.04);
+}
+
+/* Progress Bar Texture */
+.progress-textured {
+  background-image: repeating-linear-gradient(
+    -45deg,
+    transparent,
+    transparent 2px,
+    rgba(255, 255, 255, 0.15) 2px,
+    rgba(255, 255, 255, 0.15) 4px
+  );
+}
+
+/* Hide scrollbar but allow scrolling */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+@font-face {
+  font-family: 'CangLong';
+  src: url('https://cdn.jsdelivr.net/gh/AiPuZi/AiPuZiFonts@main/canglong.woff2') format('woff2');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+.font-handwrite {
+  font-family: 'CangLong', cursive, sans-serif;
+}

@@ -1,0 +1,68 @@
+{
+  "name": "hour-tracker-miniprogram",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Taro 小程序项目",
+  "templateInfo": {
+    "name": "pie-taro-react",
+    "typescript": true,
+    "css": "tailwindcss",
+    "framework": "React"
+  },
+  "scripts": {
+    "dev:weapp": "npm run build:weapp -- --watch",
+    "build:weapp": "taro build --type weapp",
+    "dev:h5": "npm run build:h5 -- --watch",
+    "build:h5": "taro build --type h5",
+    "ci:preview": "node scripts/ci.mjs preview",
+    "ci:upload": "node scripts/ci.mjs upload",
+    "postinstall": "weapp-tw patch"
+  },
+  "browserslist": [
+    "defaults and fully supports es6-module",
+    "maintained node versions"
+  ],
+  "dependencies": {
+    "@babel/runtime": "^7.24.4",
+    "@reduxjs/toolkit": "^2.11.2",
+    "@tailwindcss/postcss": "^4.1.18",
+    "@tarojs/components": "4.1.9",
+    "@tarojs/helper": "4.1.9",
+    "@tarojs/plugin-framework-react": "4.1.9",
+    "@tarojs/plugin-platform-h5": "4.1.9",
+    "@tarojs/plugin-platform-weapp": "4.1.9",
+    "@tarojs/react": "4.1.9",
+    "@tarojs/runtime": "4.1.9",
+    "@tarojs/shared": "4.1.9",
+    "@tarojs/taro": "4.1.9",
+    "lucide": "^0.562.0",
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0",
+    "react-redux": "^9.2.0",
+    "redux-logger": "^3.0.6"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.24.4",
+    "@babel/plugin-transform-class-properties": "7.25.9",
+    "@babel/preset-react": "^7.24.1",
+    "@tarojs/cli": "4.1.9",
+    "@tarojs/plugin-generator": "4.1.9",
+    "@tarojs/vite-runner": "4.1.9",
+    "@types/react": "^18.0.0",
+    "@types/redux-logger": "^3.0.13",
+    "@vitejs/plugin-react": "^4.3.0",
+    "autoprefixer": "^10.4.23",
+    "babel-preset-taro": "4.1.9",
+    "eslint": "^8.57.0",
+    "eslint-config-taro": "4.1.9",
+    "eslint-plugin-react": "^7.34.1",
+    "eslint-plugin-react-hooks": "^4.4.0",
+    "miniprogram-ci": "^1.9.0",
+    "postcss": "^8.5.6",
+    "prettier": "^3.7.4",
+    "tailwindcss": "^4.1.18",
+    "typescript": "^5.4.5",
+    "vite": "^4.2.0",
+    "weapp-tailwindcss": "^4.9.2"
+  }
+}

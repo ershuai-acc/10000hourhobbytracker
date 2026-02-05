@@ -1,0 +1,8 @@
+{
+  "projectType": "taro",
+  "robot": 1,
+  "workflow": {
+    "requirePreview": false,
+    "previewExpiry": 1440
+  }
+}
